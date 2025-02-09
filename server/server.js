@@ -8,4 +8,7 @@ const mongoose = require('mongoose');
 const app = express();
 mongoose.connect(process.env.MONGODB_URI)
 
-
+//home
+app.get('/', (req,res) => {
+    res.render('')
+})
