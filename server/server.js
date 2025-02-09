@@ -9,6 +9,9 @@ const app = express();
 const port = 3000;
 const debug = require('debug')('server');
 
+//middleware
+app.use(express.json());
+
 //MongoDB connection
 mongoose.connect(process.env.MONGODB_URI);
 mongoose.connection.on("connected", () => {
@@ -16,7 +19,7 @@ mongoose.connection.on("connected", () => {
 });
 mongoose.connection.on('error', (err) => {
     debug(`MongoDB connection error: ${err}`);
-})
+});
 
 //routes
 app.get('/', (req, res) => {
