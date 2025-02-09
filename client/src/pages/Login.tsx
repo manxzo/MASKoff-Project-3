@@ -4,7 +4,6 @@ import {
   Form,
   Card,
   CardBody,
-  CardFooter,
   CardHeader,
 } from "@heroui/react";
 import { EyeIcon } from "@/components/icons";
