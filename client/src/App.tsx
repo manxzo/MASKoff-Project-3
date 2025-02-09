@@ -1,10 +1,10 @@
 import { Route, Routes } from "react-router-dom";
 
-import IndexPage from "@/pages/index";
-import DocsPage from "@/pages/docs";
-import PricingPage from "@/pages/pricing";
-import BlogPage from "@/pages/blog";
-import AboutPage from "@/pages/about";
+import IndexPage from "@/pages/template/index";
+import DocsPage from "@/pages/template/docs";
+import PricingPage from "@/pages/template/pricing";
+import BlogPage from "@/pages/template/blog";
+import AboutPage from "@/pages/template/about";
 
 function App() {
   return (
