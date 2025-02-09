@@ -1,69 +1,66 @@
-# Logs
-logs
+# Logs and debugging files
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
-node_modules
-dist
-dist-ssr
-*.local
+# Dependency directories
+node_modules/
+jspm_packages/
+bower_components/
+.webpack/
+.web_modules/
 
-# Editor directories and files
-.vscode/*
+# Build and output directories
+dist/
+dist-ssr/
+.next/
+.nuxt/
+.cache/
+.parcel-cache/
+.svelte-kit/
+.vuepress/dist/
+.docusaurus/
+.temp/
+.serverless/
+.dynamodb/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Lock files
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
+bun.lockb
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Editor and IDE files
+.vscode/
 !.vscode/extensions.json
-.idea
+.idea/
+.history/
 .DS_Store
+.ionide
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-*.env
 
-pnpm-lock.yaml
-yarn.lock
-package-lock.json
-bun.lockb
-functionalsample.pdf
-# Created by https://www.toptal.com/developers/gitignore/api/macos,windows,linux,dotenv
-# Edit at https://www.toptal.com/developers/gitignore?templates=macos,windows,linux,dotenv
-
-### dotenv ###
-.env
-
-### Linux ###
-*~
-
-# temporary files which can be created if a process still has a handle open of a deleted file
-.fuse_hidden*
-
-# KDE directory preferences
-.directory
-
-# Linux trash folder which might appear on any partition or disk
-.Trash-*
-
-# .nfs files are created when an open file is removed but is still being accessed
-.nfs*
-
-### macOS ###
-# General
-.DS_Store
+# macOS system files
 .AppleDouble
 .LSOverride
-
-# Icon must end with two \r
-Icon
-
-
-# Thumbnails
+Icon?
 ._*
-
-# Files that might appear in the root of a volume
 .DocumentRevisions-V100
 .fseventsd
 .Spotlight-V100
@@ -71,42 +68,109 @@ Icon
 .Trashes
 .VolumeIcon.icns
 .com.apple.timemachine.donotpresent
-
-# Directories potentially created on remote AFP share
 .AppleDB
 .AppleDesktop
 Network Trash Folder
 Temporary Items
 .apdisk
-
-### macOS Patch ###
-# iCloud generated files
 *.icloud
 
-### Windows ###
-# Windows thumbnail cache files
+# Windows system files
 Thumbs.db
-Thumbs.db:encryptable
 ehthumbs.db
 ehthumbs_vista.db
-
-# Dump file
 *.stackdump
-
-# Folder config file
 [Dd]esktop.ini
-
-# Recycle Bin used on file shares
 $RECYCLE.BIN/
-
-# Windows Installer files
 *.cab
 *.msi
 *.msix
 *.msm
 *.msp
-
-# Windows shortcuts
 *.lnk
 
-# End of https://www.toptal.com/developers/gitignore/api/macos,windows,linux,dotenv
+# Optional caches and lockfiles
+.npm/
+.eslintcache
+.stylelintcache
+.rpt2_cache/
+.rts2_cache_*/
+.nyc_output
+.pnp.*
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# Miscellaneous
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+.node_repl_history
+.lock-wscript
+.yarn-integrity
+.vscode-test/
+.tern-port
+.history/
+
+# vuepress build output
+.vuepress/dist
+
+# vuepress v2.x temp and cache directory
+.temp
+
+# Docusaurus cache and generated files
+.docusaurus
+
+# Serverless directories
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# yarn v2
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+### Node Patch ###
+# Serverless Webpack directories
+.webpack/
+
+# Optional stylelint cache
+
+# SvelteKit build / generate output
+.svelte-kit
+
+### VisualStudioCode ###
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+
+# Local History for Visual Studio Code
+.history/
+
+# Built Visual Studio Code Extensions
+*.vsix
+
+### VisualStudioCode Patch ###
+# Ignore all local history of files
+.history
+.ionide
+
+# End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,node
