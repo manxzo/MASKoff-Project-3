@@ -1,27 +1,20 @@
-import {
-  Input,
-  Button,
-  Form,
-  Card,
-  CardBody,
-  CardHeader,
-} from "@heroui/react";
+import { Input, Button, Form, Card, CardBody, CardHeader } from "@heroui/react";
 import { EyeIcon } from "@/components/icons";
 import { useState } from "react";
-export const Login = () => {
-  const [credentials, setCredentials] = useState({
+export const CreateUser = () => {
+  const [newUser, setNewUser] = useState({
     username: "",
     password: "",
   });
   const [viewPass, setViewPass] = useState(false);
   const handleInputChange = (event) => {
     const { name, value } = event;
-    setCredentials((prev) => ({ ...prev, [name]: value }));
+    setNewUser((prev) => ({ ...prev, [name]: value }));
   };
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log(credentials);
-    setCredentials({ username: "", password: "" });
+    console.log(newUser);
+    setNewUser({ username: "", password: "" });
   };
   return (
     <Card>
@@ -33,7 +26,7 @@ export const Login = () => {
           <Input
             name="username"
             id="username"
-            value={credentials.username}
+            value={newUser.username}
             placeholder="Username"
             onChange={handleInputChange}
           />
@@ -41,7 +34,7 @@ export const Login = () => {
             <Input
               name="password"
               id="password"
-              value={credentials.password}
+              value={newUser.password}
               placeholder="password"
               type={viewPass ? "text" : "password"}
               onChange={handleInputChange}
