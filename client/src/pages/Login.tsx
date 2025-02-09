@@ -8,23 +8,27 @@ import {
 } from "@heroui/react";
 import { EyeIcon } from "@/components/icons";
 import { useState } from "react";
+import useLogin from "@/hooks/useLogin";
+import DefaultLayout from "@/layouts/default";
 export const Login = () => {
   const [credentials, setCredentials] = useState({
     username: "",
     password: "",
   });
   const [viewPass, setViewPass] = useState(false);
+  const {userInfo,loading,error,loginUser} = useLogin();
   const handleInputChange = (event) => {
     const { name, value } = event;
     setCredentials((prev) => ({ ...prev, [name]: value }));
   };
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log(credentials);
+    loginUser(credentials);
     setCredentials({ username: "", password: "" });
   };
   return (
-    <Card>
+    <DefaultLayout>
+ <Card>
       <CardHeader>
         <pre>Login</pre>
       </CardHeader>
@@ -54,9 +58,12 @@ export const Login = () => {
               <EyeIcon />
             </Button>
           </span>
-          <Button type="submit">Login</Button>
+          <Button type="submit" isLoading={loading}>Login</Button>
         </Form>
       </CardBody>
     </Card>
+    <p>{JSON.stringify(userInfo)}</p>
+    </DefaultLayout>
+   
   );
 };
