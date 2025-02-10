@@ -10,7 +10,7 @@ export const siteConfig = {
     },
     {
       label: "Create User",
-      href: "/user/new",
+      href: "/newuser",
     },
     {
       label: "Login",
