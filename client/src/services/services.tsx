@@ -42,3 +42,35 @@ export const fetchUserData = async (userID) => {
 export const logout = () => {
     localStorage.removeItem('token'); // Remove token from localStorage
 };
+
+export const retrieveAllUsers = async ()=>{
+    const response = await axios.get(`${SERVER_URL}users`);
+    return response.data;
+}
+
+export const startChat = async (participants)=>{
+
+    const response = await axios.post(`${SERVER_URL}chat/create`,{
+        user1:participants.user1,
+        user2:participants.user2
+    })
+ return response.data;
+}
+export const findChats = async(userId)=>{
+    const response = await axios.get(`${SERVER_URL}chat/${userId}`);
+    return response.data;
+}
+
+export const sendMessage = async(sender,recipient,message)=>{
+const response = await axios.post(`${SERVER_URL}chat/send`,{
+sender:sender,
+recipient:recipient,
+message:message
+})
+return response.data;
+}
+
+export const seeChatLog = async(chatId)=>{
+    const response = await axios.get(`${SERVER_URL}chat/messages/${chatId}`);
+    return response.data;
+}
