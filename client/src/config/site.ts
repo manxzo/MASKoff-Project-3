@@ -18,7 +18,7 @@ export const siteConfig = {
     },
     {
       label: "Messages",
-      href: "/user/messages",
+      href: "/messages",
     },
     {
       label: "About",

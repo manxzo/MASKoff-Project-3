@@ -7,7 +7,7 @@ const useUpdateMessages = ()=>{
     const [error, setError] = useState("");
     const contextChat = useContext(ChatsConfigContext);
     const {updateMessages,userChats:{user}}=contextChat; 
-   
+
     const updatedMessages = async () => {
       setLoading(true);
       setError("");
