@@ -74,3 +74,28 @@ export const seeChatLog = async(chatId)=>{
     const response = await axios.get(`${SERVER_URL}chat/messages/${chatId}`);
     return response.data;
 }
+
+export const createPost = async (postData) => {
+    const response = await axios.post(`${SERVER_URL}posts`, postData);
+    return response.data;
+}
+
+export const getPosts = async () => {
+    const response = await axios.get(`${SERVER_URL}posts`);
+    return response.data;
+}
+
+export const getPost = async (postId) => {
+    const response = await axios.get(`${SERVER_URL}posts/${postId}`);
+    return response.data;
+}
+
+export const updatePost = async (postId, postData) => {
+    const response = await axios.put(`${SERVER_URL}posts/${postId}`);
+    return response.data;
+}
+
+export const deletePost = async (postId) => {
+    const response = await axios.delete(`${SERVER_URL}posts/${postId}`);
+    return response.data;
+}

@@ -1,24 +1,32 @@
 export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
-  name: "Vite + HeroUI",
-  description: "Make beautiful websites regardless of your design experience.",
+  name: "MASKoff",
+  description: "A full-stack job platform with community engagement, direct messaging, and interview scheduling.",
   navItems: [
     {
       label: "Home",
       href: "/",
     },
     {
-      label: "Create User",
-      href: "/newuser",
+      label: 'Posts',
+      href: '/posts',
+    },
+    {
+      label: 'Jobs',
+      href: '/jobs',
+    },
+    {
+      label: "Messages",
+      href: "/messages",
     },
     {
       label: "Login",
       href: "/login",
     },
     {
-      label: "Messages",
-      href: "/messages",
+      label: "Create User",
+      href: "/newuser",
     },
     {
       label: "About",
