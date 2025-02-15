@@ -43,19 +43,19 @@ export const Messages = () => {
   };
   return (
     <DefaultLayout>
-      <div>
+      <div className="flex h-[calc(100vh-200px)] gap-4">
         {/* Users List */}
-        <Card>
+        <Card className="w-1/4">
           <CardHeader>Users</CardHeader>
           <Divider/>
           <CardBody>
-            <div>
+            <div className="flex flex-col gap-2">
               {users?.map((user) => (
                 <Button 
                 key={user._id}
                 color={selectedUser === user._id ? "primary" : "default"}
                 variant={selectedUser === user._id ? "solid" : "light"}
-                onClick={()=>setSelectedUser(user._id)}
+                onPress={()=>setSelectedUser(user._id)}
                 >
                   {user.username}
                 </Button> 
@@ -64,14 +64,14 @@ export const Messages = () => {
           </CardBody>
         </Card>
         {/* Chat Area */}
-        <Card>
+        <Card className="flex-1 h-full">
           <CardHeader>
             {users?.find((user) => user._id === selectedUser)?.username || "Select a user"}
           </CardHeader>
           <Divider/>
-          <CardBody>
+          <CardBody className="flex flex-col h-full">
             {/* Messages Display */}
-            <div>
+            <div className="flex-1 flex flex-col gap-2">
               {selectedUser && (
                 <>
                   {userChats.received
@@ -95,7 +95,7 @@ export const Messages = () => {
               />
               <Button
                 isLoading={loading}
-                onClick={handleSendMessage}
+                onPress={handleSendMessage}
                 disabled={!selectedUser || !message.trim()}
               >
                 Send
