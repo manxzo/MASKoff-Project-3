@@ -52,12 +52,12 @@ export const CreateUser = () => {
     }
 
  
-    const strongPasswordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+   /* const strongPasswordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     
     if (!strongPasswordRegex.test(newUser.password)) {
         setError("Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&).");
         return;
-    }
+    }*/
 
     try {
         await createNewUser({
