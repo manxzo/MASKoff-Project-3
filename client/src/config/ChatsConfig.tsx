@@ -17,19 +17,6 @@ interface UserChats {
   sent: Message[];
 }
 
-export interface Comment {
-    _id: string;
-    content: string;
-    author: {_id: string; username: string};
-}
-
-export interface Post {
-    _id: string;
-    title: string;
-    content: string;
-    author: {_id: string; username: string};
-    comments: Comment[];
-}
 
 //Update ConfigType here in this format -->  functionName:(argument:argumentType)=>returnType;
 interface ChatsConfigType {
