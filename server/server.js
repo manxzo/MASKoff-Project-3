@@ -9,6 +9,9 @@ const { generateToken, verifyToken } = require("./components/jwtUtils");
 const User = require("./models/User");
 const ChatLog = require("./models/ChatLog");
 const Introduction = require("./models/Introduction");
+const Post = require('./models/Post'); //NEW
+const Job = require('./models/Job'); //NEW
+const { verify } = require("jsonwebtoken");
 
 const app = express();
 const port = process.env.PORT;
@@ -49,14 +52,26 @@ app.get("/api", (req, res) => {
       listUsers: "GET /api/users",
       friendRequest: "POST /api/friends/request",
       friendRequests: "GET /api/friends/requests",
+      deleteFriendRequest: "DELETE /api/friends/request", //NEW
       acceptFriend: "POST /api/friends/accept",
       friends: "GET /api/friends",
       createChat: "POST /api/chat/create",
       listChats: "GET /api/chats",
+      findChats: "GET /api/chat/:userId", //NEW
       sendMessage: "POST /api/chat/send",
       getMessages: "GET /api/chat/messages/:chatId",
       deleteMessage: "DELETE /api/chat/message/:chatId/:messageId",
       deleteChat: "DELETE /api/chat/:chatId",
+      createPost: "POST /api/posts", //NEW
+      getPosts: "GET /api/posts", //NEW
+      getPost: "GET /api/posts/:postId", //NEW
+      updatePost: "PUT /api/posts/:postId", //NEW
+      deletePost: "DELETE /api/posts/:postId", //NEW
+      addComment: "POST /api/posts/:postId/comments", //NEW
+      createJob: "POST /api/jobs", //NEW
+      getJobs: "GET /api/jobs", //NEW
+      updateJob: "PUT /api/jobs/:jobId", //NEW
+      deleteJob: "DELETE /api/jobs/:jobId", //NEW
       postIntroduction: "POST /api/introduction",
       getIntroductions: "GET /api/introductions",
     },
@@ -221,6 +236,30 @@ app.post("/api/friends/accept", verifyToken, async (req, res) => {
   }
 });
 
+//NEW: ! Delete (decline) a friend request -> remove pending friend req from another user
+app.delete('/api/friends/request', verifyToken, async (req, res) => {
+  const { requesterId } = req.body;
+  if (!requesterId)
+    return res.status(400).json({ error: "Requester ID required" });
+  try {
+    const user = await User.findById(requesterId);
+    if (!user) return res.status(404).json({error: 'Target user ID required'});
+    if (!user.friendRequests.includes(req.user.id)) {
+      return res
+        .status(400)
+        .json({ error: "No friend request from this user" });
+    }
+    user.friendRequests = user.friendRequests.filter(
+      (id) => id.toString() !== requesterId
+    );
+    await user.save();
+    return res.status(200).json({ message: "Friend request declined successfully" });
+  } catch (err) {
+    console.error("Error deleting friend request:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+})
+
 // Get friend list for the logged in user
 app.get("/api/friends", verifyToken, async (req, res) => {
   try {
@@ -271,6 +310,18 @@ app.get("/api/chats", verifyToken, async (req, res) => {
     return res.status(200).json({ chats });
   } catch (err) {
     console.error("Error fetching chats:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+
+//NEW: ! Find chats for a specific user (findChats) -> can use in cases where you want to display a list of all convos user is involved. more efficient than fetching all chats then filtering on client side. -> maintain performance and scalability when database grows
+app.get("/api/chat/:userId", verifyToken, async (req, res) => {
+  const {userID} = req.params;
+  try {
+    const chats = await ChatLog.find({ participants: userID }).lean();
+    return res.status(200).json({ chats });
+  } catch (err) {
+    console.error('Error fetching chats for user: ', err);
     return res.status(500).json({ error: "Server error" });
   }
 });
@@ -392,6 +443,181 @@ app.get("/api/introductions", async (req, res) => {
   } catch (err) {
     console.error("Error fetching introductions:", err);
     return res.status(500).json({ error: "Server error" });
+  }
+});
+
+//!* NEW ENDPOINTS *!//
+
+// Create a new post
+app.post('/api/posts', verifyToken, async (req, res) => {
+  const {title, content} = req.body;
+  if (!title || !content)
+    return res.status(400).json({error: 'Title and content required'});
+  try {
+    const newPost = new Post({
+      title,
+      content,
+      author: req.user.id,
+      comments: [],
+    });
+    await newPost.save();
+    return res.status(201).json({message: 'Post created successfully', post: newPost});
+  } catch (err) {
+    console.error('Error creating post: ', err);
+    return res.status(500).json({error: 'Server error'});
+  }
+});
+
+// Get all posts
+app.get('api/posts', async (req, res) => {
+  try {
+    const posts = await Post.find().populate('author', 'username').lean();
+    return res.status(200).json({posts});
+  } catch (err) {
+    console.error('Error fetching posts: ', err);
+    return res.status(500).json({error: 'Server error'});
+  }
+});
+
+// Get a single post by ID
+app.get('/api/posts/:postId', async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.postId).populate('author', 'username').lean();
+    if (!post) return res.status(404).json({error: 'Post not found'});
+    return res.status(200).json({post});
+  } catch (err) {
+    console.error('Error fetching post: ', err);
+    return res.status(500).json({error: 'Server error'});
+  }
+});
+
+// Update a post
+app.put('/api/posts/:postId', verifyToken, async (req, res) => {
+  const {title, content} = req.body;
+  try {
+    const post = await Post.findById(req.params.postId);
+    if (!post) return res.status(404).json({error: 'Post not found'});
+    if (post.author.toString() !== req.user.id) {
+      return res.status(403).json({message: 'Post updated successfully', post});
+    }
+  } catch (err) {
+    console.error('Error updating post: ', err);
+    return res.status(500).json({error: 'Server error'});
+  }
+});
+
+// Delete a post
+app.delete('/api/posts/:postId', verifyToken, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.postId);
+    if (!post) return res.status(404).json({error: 'Post not found'});
+    if (post.author.toString() !== req.user.id) {
+      return res.status(403).json({error: 'Not authorized to delete this post'});
+    }
+    await Post.findById(req.params.postId);
+    return res.status(200).json({message: 'Post deleted successfully'});
+  } catch (err) {
+    console.error('Error deleting post: ', err);
+    return res.status(500).json({error: 'Server error'});
+  }
+});
+
+// Add comment to a post
+app.post('/api/posts/:postId/comments', verifyToken, async (req, res) => {
+  const {content} = req.body;
+  if (!content)
+    return res.status(400).json({error: 'Comment content required'});
+  try {
+    const post = await Post.findById(req.params.postId);
+    if (!post) return res.status(404).json({error: 'Post no found'});
+    const comment = {
+      content,
+      author: req.user.id,
+      timestamp: new Date(),
+    };
+    post.comments.push(comment);
+    await post.save();
+    return res.status(201).json({message: 'Comment added successfully', comment});
+  } catch (err) {
+    console.error('Error adding comment: ', err);
+    return res.status(500).json({error: 'Server error'});
+  }
+});
+
+// Create new JOB post
+app.post('/api/jobs', verifyToken, async (req, res) => {
+  const {title, description} = req.body;
+  if (!title || !description) return res.status(400).json({error: 'Title and description required'});
+  try {
+    const newJob = new Job({
+      title, 
+      description, 
+      employer: req.user.id,
+      applicants: [],
+    });
+    await newJob.save();
+    return res.status(201).json({message: 'Job post created successfully', job: newJob});
+  } catch (err) {
+    console.error('Error creating job post: ', err);
+    return res.status(500).json({error: 'Server error'});
+  }
+});
+
+// Get all JOB posts
+app.get('/api/jobs', async (req, res) => {
+  try {
+    const jobs = await Job.find().populate('employer', 'username').lean();
+    return res.status(200).json({jobs});
+  } catch (err) {
+    console.error('Error fetching job posts: ', err);
+    return res.status(500).json({error: 'Server error'});
+  }
+});
+
+// Get a single JOB post by ID
+app.get('/api/jobs/:jobId', async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.jobId).populate('employer', 'username').lean();
+    if (!job) return res.status(404).json({error: 'Job post not found'});
+    return res.status(200).json({job});
+  } catch (err) {
+    console.error('Error fetching job post: ', err);
+    return res.status(500).json({error: 'Server error'});
+  }
+});
+
+// Update a JOB post
+app.put('/api/jobs/:jobId', verifyToken, async (req, res) => {
+  const {title, description} = req.body;
+  try {
+    const job = await Job.findById(req. params. jobId);
+    if (!job) return res.status(404).json({error: 'Job post not found'});
+    if (job.employer.toString() !== req.user.id) {
+      return res.status(403).json({error: 'Not authorized to update this job post'});
+    }
+    job.title = title || job.title;
+    job.description = description || job.description;
+    await job.save();
+    return res.status(200).json({message: 'Job post updated successfully', job});
+  } catch (err) {
+    console.error('Error updating job post: ', err);
+    return res.status(500).json({error: 'Server error'});
+  }
+});
+
+// Delete a JOB post
+app.delete('/api/jobs/:jobId', verifyToken, async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.jobId);
+    if (!job) return res.status(404).json({error: 'Job post not found'});
+    if (job.employer.toString() !== req.user.id) {
+      return res.status(403).json({error: 'Not authorized to delete this job post'});
+    }
+    await Job.findByIdAndDelete(req.params.jobId);
+    return res.status(200).json({message: 'Job post deleted successfully'});
+  } catch (err) {
+    console.error('Error deleting job post: ', err);
+    return res.status(500).json({error: 'Server error'});
   }
 });
 
