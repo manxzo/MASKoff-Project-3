@@ -70,6 +70,18 @@ message:message
 return response.data;
 }
 
+export const deleteMessage = async (chatId: string, messageId: string) => {
+    const response = await axios.delete(
+        `${SERVER_URL}chat/message/${chatId}/${messageId}`,
+        {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+            }
+        }
+    )
+    return response.data;
+}
+
 export const seeChatLog = async(chatId)=>{
     const response = await axios.get(`${SERVER_URL}chat/messages/${chatId}`);
     return response.data;
