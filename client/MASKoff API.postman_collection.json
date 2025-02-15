@@ -1,0 +1,482 @@
+{
+	"info": {
+		"_postman_id": "ea963d0d-522a-4b34-a40e-bd94ba4c19f3",
+		"name": "MASKoff API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "41350731"
+	},
+	"item": [
+		{
+			"name": "GET / - Welcome",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}",
+					"host": [
+						"{{base_url}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET /api - Endpoints Info",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST /api/newuser - Register New User",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"testpass123\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/newuser",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"newuser"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST /api/users/login - User Login",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"testpass123\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/users/login",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"users",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET /api/user/:userID - Get User Data",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/user/{{userId}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"user",
+						"{{userId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET /api/users - List All Users",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST /api/friends/request - Send Friend Request",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"targetUserId\": \"<TARGET_USER_ID>\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/friends/request",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"friends",
+						"request"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET /api/friends/requests - List Friend Requests",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/friends/requests",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"friends",
+						"requests"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST /api/friends/accept - Accept Friend Request",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"requesterId\": \"<REQUESTER_ID>\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/friends/accept",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"friends",
+						"accept"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET /api/friends - List Friends",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/friends",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"friends"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST /api/chat/create - Create/Retrieve Chat",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"participantId\": \"<PARTICIPANT_ID>\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/chat/create",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"chat",
+						"create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET /api/chats - List All Chats",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/chats",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"chats"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST /api/chat/send - Send Chat Message",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"chatId\": \"{{chatId}}\",\n  \"message\": \"Hello, this is a test message!\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/chat/send",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"chat",
+						"send"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET /api/chat/messages/:chatId - Get Chat Messages",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/chat/messages/{{chatId}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"chat",
+						"messages",
+						"{{chatId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DELETE /api/chat/message/:chatId/:messageId - Delete Message",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/chat/message/{{chatId}}/{{messageId}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"chat",
+						"message",
+						"{{chatId}}",
+						"{{messageId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DELETE /api/chat/:chatId - Delete Entire Chat",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/chat/{{chatId}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"chat",
+						"{{chatId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST /api/introduction - Post Introduction",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"content\": \"This is my anonymous introduction!\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/introduction",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"introduction"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET /api/introductions - Get All Introductions",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/introductions",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"introductions"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000"
+		},
+		{
+			"key": "token",
+			"value": ""
+		},
+		{
+			"key": "userId",
+			"value": ""
+		},
+		{
+			"key": "chatId",
+			"value": ""
+		},
+		{
+			"key": "messageId",
+			"value": ""
+		}
+	]
+}

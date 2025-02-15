@@ -4,17 +4,17 @@ import { BrowserRouter } from "react-router-dom";
 
 import App from "./App.tsx";
 import { Provider } from "./provider.tsx";
-import { ChatsConfigProvider } from "./config/ChatsConfig.tsx";
+import { UserConfigProvider } from "./config/UserConfig.tsx";
 import "@/styles/globals.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
-      <ChatsConfigProvider>
+      <UserConfigProvider>
         <Provider>
           <App />
         </Provider>
-      </ChatsConfigProvider>
+      </UserConfigProvider>
     </BrowserRouter>
   </React.StrictMode>
 );
