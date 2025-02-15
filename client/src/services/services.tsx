@@ -64,7 +64,7 @@ export const sendFriendReq = async (targetUserId) => {
 //Retrieve Friend Requests for logged in user
 export const retrieveFriendReq = async () => {
   const token = getAuthToken();
-  const response = await axios.get(`${SERVER_URL}friends/request`, {
+  const response = await axios.get(`${SERVER_URL}friends/requests`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   return response.data;

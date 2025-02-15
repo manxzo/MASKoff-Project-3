@@ -32,7 +32,7 @@ export const Login = () => {
     event.preventDefault();
     await loginAndUpdateUser(credentials.username,credentials.password); 
     if(!error){
-      navigate('/dashboard')
+     // navigate('/dashboard')
     }
     setCredentials({ username: "", password: "" });
   };
