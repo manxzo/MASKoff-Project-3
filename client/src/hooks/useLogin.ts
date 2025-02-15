@@ -1,36 +1,66 @@
-import { useState } from "react";
-import axios from "axios";
-import { useContext } from "react";
-import { ChatsConfigContext } from "@/config/ChatsConfig";
-const SERVER_URL = "http://localhost:3000/api/";
+import { useState, useContext } from "react";
+import { 
+  login, 
+  retrieveFriendReq, 
+  retrieveFriendList, 
+  retrieveChats, 
+  retrieveChatMessages 
+} from "@/services/services";
+import { UserConfigContext } from "@/config/UserConfig";
 
 const useLogin = () => {
-  const [userInfo, setUserInfo] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const { user, setUser } = useContext(UserConfigContext);
   const [error, setError] = useState("");
-  const contextChat = useContext(ChatsConfigContext);
-  const {setUser}=contextChat; 
-  const loginUser = async (credentials) => {
-    setLoading(true);
-    setError("");
-
+  const [loading,setLoading] = useState(false)
+  const loginAndUpdateUser = async (username, password) => {
+    setLoading(true)
     try {
-      const response = await axios.post(`${SERVER_URL}users/login`, credentials);
-      const { token, user } = response.data;
-      
-      localStorage.setItem("token", token); // 🔹 Store token
-      setUserInfo(user);
-      setUser(user);
-      return response.data;
+      const loginResponse = await login(username, password);
+      if (loginResponse.token && loginResponse.user) {
+        const userId = loginResponse.user.id;
+
+        // Retrieve additional user data concurrently
+        const [friendReqResponse, friendListResponse, chatsResponse] = await Promise.all([
+          retrieveFriendReq(),
+          retrieveFriendList(),
+          retrieveChats()
+        ]);
+
+        // For each chat, fetch its decrypted messages
+        const chats = await Promise.all(
+          (chatsResponse.chats || []).map(async (chat) => {
+            const chatId = chat._id || chat.id;
+            const createdAt = new Date(chat.createdAt) 
+            const updatedAt = new Date(chat.updatedAt) 
+            const messagesResponse = await retrieveChatMessages(chatId);
+            const mappedMessages = messagesResponse.messages.map((message)=>({...message,timestamp:(new Date(message.timestamp))}))
+            return { ...chat,createdAt:createdAt,updatedAt:updatedAt, messages: mappedMessages };
+          })
+        );
+
+        // Build the complete user object
+        const updatedUser = {
+          username: loginResponse.user.username,
+          id: userId,
+          friends: friendListResponse.friends || [],
+          friendRequests: friendReqResponse.friendRequests || [],
+          chats: chats
+        };
+
+        // Update the global user config and store the user ID locally
+        setUser(updatedUser);
+        setLoading(false)
+      } else {
+        setError("Login failed: Invalid credentials or server error.");
+        setLoading(false)
+      }
     } catch (err) {
-      setError("Invalid login credentials");
-      return null;
-    } finally {
-      setLoading(false);
+      console.error("Error in loginAndUpdateUser:", err);
+      setError(err.message || "Error during login.");
+      setLoading(false)
     }
   };
-
-  return { userInfo, loading, error, loginUser };
+  return { user, error,loading, loginAndUpdateUser };
 };
 
 export default useLogin;

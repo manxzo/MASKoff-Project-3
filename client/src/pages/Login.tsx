@@ -10,31 +10,30 @@ import { EyeIcon } from "@/components/icons";
 import { useState } from "react";
 import useLogin from "@/hooks/useLogin";
 import DefaultLayout from "@/layouts/default";
-
+import { useNavigate } from "react-router";
 export const Login = () => {
+  const navigate = useNavigate()
   const [credentials, setCredentials] = useState({
     username: "",
     password: "",
   });
   const [viewPass, setViewPass] = useState(false);
   
-  const { userInfo, loading, error, loginUser } = useLogin();
+  const { user, loading, error, loginAndUpdateUser } = useLogin();
 
-  // 🔹 Fix event.target issue
+  //  Fix event.target issue
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setCredentials((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 🔹 Login & Store Token
+  //  Login & Store Token
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const response = await loginUser(credentials);
-    
-    if (response?.token) {
-      localStorage.setItem("token", response.token); // 🔹 Store token
+    await loginAndUpdateUser(credentials.username,credentials.password); 
+    if(!error){
+     // navigate('/dashboard')
     }
-    
     setCredentials({ username: "", password: "" });
   };
 
@@ -76,7 +75,7 @@ export const Login = () => {
       </Card>
 
       {error && <p style={{ color: "red" }}>{error}</p>} 
-      {userInfo && <p style={{ color: "green" }}>{JSON.stringify(userInfo)}</p>}
+      {user && <p style={{ color: "green" }}>{JSON.stringify(user)}</p>}
     </DefaultLayout>
   );
 };

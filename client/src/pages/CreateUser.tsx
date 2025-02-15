@@ -3,8 +3,9 @@ import { EyeIcon } from "@/components/icons";
 import { useState } from "react";
 import useCreateUser from "@/hooks/useCreateUser";
 import DefaultLayout from "@/layouts/default";
-
+import { useNavigate } from "react-router";
 export const CreateUser = () => {
+  const navigate = useNavigate();
   const [newUser, setNewUser] = useState({
     username: "",
     password: "",
@@ -33,7 +34,7 @@ export const CreateUser = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
+    setError("");
     if (newUser.password !== newUser.repeatPass) {
         setError("Passwords do not match");
         return;
