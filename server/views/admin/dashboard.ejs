@@ -90,6 +90,21 @@
             color: #1d4ed8;
             text-decoration: underline;
         }
+        .role-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+        .role-admin {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        .role-user {
+            background-color: #e0e7ff;
+            color: #3730a3;
+        }
     </style>
 </head>
 <body>
@@ -105,11 +120,12 @@
 
     <main class="main">
         <section class="section">
-            <h2 class="section-title">Users</h2>
+            <h2 class="section-title">Users [<%= users.length %>]</h2>
             <table class="table">
                 <thead>
                     <tr>
                         <th>Username</th>
+                        <th>Role</th>
                         <th>Created At</th>
                         <th>Actions</th>
                     </tr>
@@ -118,6 +134,11 @@
                     <% users.forEach(user => { %>
                     <tr>
                         <td><%= user.username %></td>
+                        <td>
+                            <span class="role-badge <%= user.role === 'admin' ? 'role-admin' : 'role-user' %>">
+                                <%= user.role %>
+                            </span>
+                        </td>
                         <td><%= new Date(user.createdAt).toLocaleDateString() %></td>
                         <td>
                             <div style="display: flex; gap: 1rem;">
