@@ -31,6 +31,7 @@ interface Chat{
 interface UserConfigType {
   user: User;
   setUser: React.Dispatch<React.SetStateAction<User>>;
+  updateChats:(chats:Chat[])=>void;
 }
 //Dont touch
 export const UserConfigContext = createContext<UserConfigType | undefined>(
@@ -45,13 +46,16 @@ export const UserConfigProvider = ({ children }: { children: ReactNode }) => {
   friendRequests:[],
   chats:[]  
   })
- 
+
+ const updateChats = (newChats:Chat[])=>{
+  setUser((prev)=>({...prev,chats:newChats}))
+ }
 
 //Update new function or config here
 
   return (
     <UserConfigContext.Provider
-      value={{ user, setUser }}//update the name of your function here
+      value={{ user, setUser,updateChats }}//update the name of your function here
     >
       {children}
     </UserConfigContext.Provider>

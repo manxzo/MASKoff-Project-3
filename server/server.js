@@ -5,6 +5,8 @@ const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const cors = require("cors");
 const morgan = require("morgan");
+const WebSocket = require("ws");
+const http = require("http");
 const { generateToken, verifyToken } = require("./components/jwtUtils");
 const User = require("./models/User");
 const ChatLog = require("./models/ChatLog");
@@ -17,7 +19,7 @@ const cookieParser = require("cookie-parser");
 
 const app = express();
 const port = process.env.PORT || 3000;
-
+const server = http.createServer(app);
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -58,6 +60,43 @@ mongoose.connection.on("connected", () => {
 mongoose.connection.on("error", (err) => {
   console.error(`MongoDB connection error: ${err}`);
 });
+// Create the WebSocket server (after creating the HTTP server)
+const wss = new WebSocket.Server({ server });
+
+// When a client connects...
+wss.on("connection", (ws) => {
+  console.log("New WebSocket connection");
+
+  ws.on("message", (message) => {
+    try {
+      const parsed = JSON.parse(message);
+
+      // Listen for an authentication message
+      if (parsed.type === "AUTH" && parsed.userId) {
+        ws.userId = parsed.userId;
+        console.log(`WebSocket authenticated for user: ${ws.userId}`);
+      }
+      // You can handle other WS messages here if needed
+    } catch (err) {
+      console.error("Error parsing WS message:", err);
+    }
+  });
+
+  // Optionally, send a welcome message
+  ws.send(JSON.stringify({ type: "WELCOME", message: "Welcome to the MaskOFF WS server" }));
+});
+const sendToUser = (userId, data) =>{
+  wss.clients.forEach((client) => {
+    if (
+      client.readyState === WebSocket.OPEN &&
+      client.userId === userId
+    ) {
+      client.send(JSON.stringify(data));
+    }
+  });
+}
+
+
 
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to MaskOFF" });
@@ -202,6 +241,12 @@ app.post("/api/friends/request", verifyToken, async (req, res) => {
     }
     targetUser.friendRequests.push(req.user.id);
     await targetUser.save();
+    const payload = {
+      type: "NEW_FRIEND_REQUEST",
+      from: req.user.id,
+      message: "You have a new friend request"
+    };
+    sendToUser(targetUserId, payload);
     return res.status(200).json({ message: "Friend request sent" });
   } catch (err) {
     console.error("Error sending friend request:", err);
@@ -359,7 +404,18 @@ app.post("/api/chat/send", verifyToken, async (req, res) => {
     const recipient = chatLog.participants.filter(
       (id) => id.toString() !== req.user.id
     );
+    const recipients = chatLog.participants.map((id) => id.toString());
     await chatLog.addMessage(req.user.id, recipient, message);
+    const payload = {
+      type: "NEW_MESSAGE",
+      chatId,
+      sender: req.user.id,
+      message,
+      timestamp: new Date()
+    };
+    recipients.forEach((userId) => {
+      sendToUser(userId, payload);
+    });
     return res.status(200).json({ message: "Message sent successfully" });
   } catch (err) {
     console.error("Error sending message:", err);

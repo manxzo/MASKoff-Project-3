@@ -11,14 +11,13 @@ import { UserConfigContext } from "@/config/UserConfig";
 const useLogin = () => {
   const { user, setUser } = useContext(UserConfigContext);
   const [error, setError] = useState("");
-  const [loading,setLoading] = useState(false)
+  const [loading,setLoading] = useState(false);
   const loginAndUpdateUser = async (username, password) => {
     setLoading(true)
     try {
       const loginResponse = await login(username, password);
       if (loginResponse.token && loginResponse.user) {
         const userId = loginResponse.user.id;
-
         // Retrieve additional user data concurrently
         const [friendReqResponse, friendListResponse, chatsResponse] = await Promise.all([
           retrieveFriendReq(),
