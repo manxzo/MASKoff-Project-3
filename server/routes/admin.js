@@ -62,6 +62,7 @@ router.get("/dashboard", isAdmin, async (req, res) => {
       jobs: [], // Temporary empty array
       posts: [], // Temporary empty array
       csrfToken: req.csrfToken(),
+      currentUser: req.user, // Pass the request object to access user info
     });
   } catch (error) {
     res.status(500).send("Server Error");
