@@ -21,6 +21,7 @@ bruno/
 .env.local
 .env.*.local
 admin.txt
+query.js
 
 # Others
 MASKoff API.json
