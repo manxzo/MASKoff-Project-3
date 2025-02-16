@@ -9,25 +9,46 @@ const { generateToken, verifyToken } = require("./components/jwtUtils");
 const User = require("./models/User");
 const ChatLog = require("./models/ChatLog");
 const Introduction = require("./models/Introduction");
-const Post = require('./models/Post'); //NEW
-const Job = require('./models/Job'); //NEW
+const Post = require("./models/Post"); //NEW
+const Job = require("./models/Job"); //NEW
 const { verify } = require("jsonwebtoken");
+const adminRoutes = require("./routes/admin");
+const cookieParser = require("cookie-parser");
 
 const app = express();
-const port = process.env.PORT;
+const port = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.use(cors());
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+      },
+    },
+  })
+);
 app.use(morgan("combined"));
+
+// View engine setup
+app.set("view engine", "ejs");
+app.set("views", __dirname + "/views");
 
 // Rate Limiting Middleware
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
+  windowMs: 15 * 60 * 1000,
   max: 100,
 });
 app.use(limiter);
+
+// Routes
+app.use("/admin", adminRoutes);
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI);
@@ -37,7 +58,6 @@ mongoose.connection.on("connected", () => {
 mongoose.connection.on("error", (err) => {
   console.error(`MongoDB connection error: ${err}`);
 });
-
 
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to MaskOFF" });
@@ -77,7 +97,6 @@ app.get("/api", (req, res) => {
     },
   });
 });
-
 
 // Register a new user
 app.post("/api/newuser", async (req, res) => {
@@ -152,7 +171,7 @@ app.get("/api/user/:userID", verifyToken, async (req, res) => {
   }
 });
 
-// List all users 
+// List all users
 app.get("/api/users", async (req, res) => {
   try {
     const users = await User.find({}, "username").lean();
@@ -177,11 +196,9 @@ app.post("/api/friends/request", verifyToken, async (req, res) => {
       targetUser.friendRequests.includes(req.user.id) ||
       targetUser.friends.includes(req.user.id)
     ) {
-      return res
-        .status(400)
-        .json({
-          error: "Friend request already sent or you are already friends",
-        });
+      return res.status(400).json({
+        error: "Friend request already sent or you are already friends",
+      });
     }
     targetUser.friendRequests.push(req.user.id);
     await targetUser.save();
@@ -237,13 +254,14 @@ app.post("/api/friends/accept", verifyToken, async (req, res) => {
 });
 
 //NEW: ! Delete (decline) a friend request -> remove pending friend req from another user
-app.delete('/api/friends/request', verifyToken, async (req, res) => {
+app.delete("/api/friends/request", verifyToken, async (req, res) => {
   const { requesterId } = req.body;
   if (!requesterId)
     return res.status(400).json({ error: "Requester ID required" });
   try {
     const user = await User.findById(requesterId);
-    if (!user) return res.status(404).json({error: 'Target user ID required'});
+    if (!user)
+      return res.status(404).json({ error: "Target user ID required" });
     if (!user.friendRequests.includes(req.user.id)) {
       return res
         .status(400)
@@ -253,12 +271,14 @@ app.delete('/api/friends/request', verifyToken, async (req, res) => {
       (id) => id.toString() !== requesterId
     );
     await user.save();
-    return res.status(200).json({ message: "Friend request declined successfully" });
+    return res
+      .status(200)
+      .json({ message: "Friend request declined successfully" });
   } catch (err) {
     console.error("Error deleting friend request:", err);
     return res.status(500).json({ error: "Server error" });
   }
-})
+});
 
 // Get friend list for the logged in user
 app.get("/api/friends", verifyToken, async (req, res) => {
@@ -273,7 +293,6 @@ app.get("/api/friends", verifyToken, async (req, res) => {
     return res.status(500).json({ error: "Server error" });
   }
 });
-
 
 // Create or retrieve a chat between the authenticated user and another participant
 app.post("/api/chat/create", verifyToken, async (req, res) => {
@@ -291,12 +310,10 @@ app.post("/api/chat/create", verifyToken, async (req, res) => {
       chatLog = new ChatLog({ participants: [user1, user2], messages: [] });
       await chatLog.save();
     }
-    return res
-      .status(200)
-      .json({
-        chatId: chatLog._id,
-        message: "Chat created or retrieved successfully",
-      });
+    return res.status(200).json({
+      chatId: chatLog._id,
+      message: "Chat created or retrieved successfully",
+    });
   } catch (err) {
     console.error("Error creating chat:", err);
     return res.status(500).json({ error: "Server error" });
@@ -316,12 +333,12 @@ app.get("/api/chats", verifyToken, async (req, res) => {
 
 //NEW: ! Find chats for a specific user (findChats) -> can use in cases where you want to display a list of all convos user is involved. more efficient than fetching all chats then filtering on client side. -> maintain performance and scalability when database grows
 app.get("/api/chat/:userId", verifyToken, async (req, res) => {
-  const {userID} = req.params;
+  const { userID } = req.params;
   try {
     const chats = await ChatLog.find({ participants: userID }).lean();
     return res.status(200).json({ chats });
   } catch (err) {
-    console.error('Error fetching chats for user: ', err);
+    console.error("Error fetching chats for user: ", err);
     return res.status(500).json({ error: "Server error" });
   }
 });
@@ -339,7 +356,9 @@ app.post("/api/chat/send", verifyToken, async (req, res) => {
     if (!chatLog.participants.some((id) => id.toString() === req.user.id)) {
       return res.status(403).json({ error: "Not authorized for this chat" });
     }
-    const recipient = chatLog.participants.filter((id)=>id.toString()!==req.user.id)
+    const recipient = chatLog.participants.filter(
+      (id) => id.toString() !== req.user.id
+    );
     await chatLog.addMessage(req.user.id, recipient, message);
     return res.status(200).json({ message: "Message sent successfully" });
   } catch (err) {
@@ -365,32 +384,39 @@ app.get("/api/chat/messages/:chatId", verifyToken, async (req, res) => {
 });
 
 // Delete a message (only allowed by the sender)
-app.delete('/api/chat/message/:chatId/:messageId', verifyToken, async (req, res) => {
-  const { chatId, messageId } = req.params;
-  try {
-    const updatedChat = await ChatLog.findOneAndUpdate(
-      {
-        _id: chatId,
-        "messages._id": messageId,
-        "messages.sender": req.user.id, 
-      },
-      {
-        $pull: { messages: { _id: messageId } }
-      },
-      { new: true }
-    );
+app.delete(
+  "/api/chat/message/:chatId/:messageId",
+  verifyToken,
+  async (req, res) => {
+    const { chatId, messageId } = req.params;
+    try {
+      const updatedChat = await ChatLog.findOneAndUpdate(
+        {
+          _id: chatId,
+          "messages._id": messageId,
+          "messages.sender": req.user.id,
+        },
+        {
+          $pull: { messages: { _id: messageId } },
+        },
+        { new: true }
+      );
 
-    if (!updatedChat) {
-      return res.status(404).json({ error: 'Chat or message not found, or you are not authorized.' });
+      if (!updatedChat) {
+        return res.status(404).json({
+          error: "Chat or message not found, or you are not authorized.",
+        });
+      }
+
+      return res.status(200).json({ message: "Message deleted successfully" });
+    } catch (err) {
+      console.error("Error deleting message with $pull:", err);
+      return res
+        .status(500)
+        .json({ error: err.message || "Server error while deleting message" });
     }
-
-    return res.status(200).json({ message: 'Message deleted successfully' });
-  } catch (err) {
-    console.error('Error deleting message with $pull:', err);
-    return res.status(500).json({ error: err.message || 'Server error while deleting message' });
   }
-});
-
+);
 
 // Delete an entire chat (only if the user is a participant)
 app.delete("/api/chat/:chatId", verifyToken, async (req, res) => {
@@ -409,7 +435,6 @@ app.delete("/api/chat/:chatId", verifyToken, async (req, res) => {
     return res.status(500).json({ error: "Server error" });
   }
 });
-
 
 // Post an anonymous introduction
 app.post("/api/introduction", verifyToken, async (req, res) => {
@@ -430,7 +455,7 @@ app.post("/api/introduction", verifyToken, async (req, res) => {
   }
 });
 
-// Get all introductions 
+// Get all introductions
 app.get("/api/introductions", async (req, res) => {
   try {
     const intros = await Introduction.find().sort({ createdAt: -1 }).lean();
@@ -449,10 +474,10 @@ app.get("/api/introductions", async (req, res) => {
 //!* NEW ENDPOINTS *!//
 
 // Create a new post
-app.post('/api/posts', verifyToken, async (req, res) => {
-  const {title, content} = req.body;
+app.post("/api/posts", verifyToken, async (req, res) => {
+  const { title, content } = req.body;
   if (!title || !content)
-    return res.status(400).json({error: 'Title and content required'});
+    return res.status(400).json({ error: "Title and content required" });
   try {
     const newPost = new Post({
       title,
@@ -461,75 +486,83 @@ app.post('/api/posts', verifyToken, async (req, res) => {
       comments: [],
     });
     await newPost.save();
-    return res.status(201).json({message: 'Post created successfully', post: newPost});
+    return res
+      .status(201)
+      .json({ message: "Post created successfully", post: newPost });
   } catch (err) {
-    console.error('Error creating post: ', err);
-    return res.status(500).json({error: 'Server error'});
+    console.error("Error creating post: ", err);
+    return res.status(500).json({ error: "Server error" });
   }
 });
 
 // Get all posts
-app.get('api/posts', async (req, res) => {
+app.get("api/posts", async (req, res) => {
   try {
-    const posts = await Post.find().populate('author', 'username').lean();
-    return res.status(200).json({posts});
+    const posts = await Post.find().populate("author", "username").lean();
+    return res.status(200).json({ posts });
   } catch (err) {
-    console.error('Error fetching posts: ', err);
-    return res.status(500).json({error: 'Server error'});
+    console.error("Error fetching posts: ", err);
+    return res.status(500).json({ error: "Server error" });
   }
 });
 
 // Get a single post by ID
-app.get('/api/posts/:postId', async (req, res) => {
+app.get("/api/posts/:postId", async (req, res) => {
   try {
-    const post = await Post.findById(req.params.postId).populate('author', 'username').lean();
-    if (!post) return res.status(404).json({error: 'Post not found'});
-    return res.status(200).json({post});
+    const post = await Post.findById(req.params.postId)
+      .populate("author", "username")
+      .lean();
+    if (!post) return res.status(404).json({ error: "Post not found" });
+    return res.status(200).json({ post });
   } catch (err) {
-    console.error('Error fetching post: ', err);
-    return res.status(500).json({error: 'Server error'});
+    console.error("Error fetching post: ", err);
+    return res.status(500).json({ error: "Server error" });
   }
 });
 
 // Update a post
-app.put('/api/posts/:postId', verifyToken, async (req, res) => {
-  const {title, content} = req.body;
+app.put("/api/posts/:postId", verifyToken, async (req, res) => {
+  const { title, content } = req.body;
   try {
     const post = await Post.findById(req.params.postId);
-    if (!post) return res.status(404).json({error: 'Post not found'});
+    if (!post) return res.status(404).json({ error: "Post not found" });
     if (post.author.toString() !== req.user.id) {
-      return res.status(403).json({message: 'Post updated successfully', post});
+      return res
+        .status(403)
+        .json({ message: "Post updated successfully", post });
     }
   } catch (err) {
-    console.error('Error updating post: ', err);
-    return res.status(500).json({error: 'Server error'});
+    console.error("Error updating post: ", err);
+    return res.status(500).json({ error: "Server error" });
   }
 });
 
 // Delete a post
-app.delete('/api/posts/:postId', verifyToken, async (req, res) => {
+app.delete("/api/posts/:postId", verifyToken, async (req, res) => {
   try {
     const post = await Post.findById(req.params.postId);
-    if (!post) return res.status(404).json({error: 'Post not found'});
+    if (!post) return res.status(404).json({ error: "Post not found" });
     if (post.author.toString() !== req.user.id) {
-      return res.status(403).json({error: 'Not authorized to delete this post'});
+      return res
+        .status(403)
+        .json({ error: "Not authorized to delete this post" });
     }
     await Post.findById(req.params.postId);
-    return res.status(200).json({message: 'Post deleted successfully'});
+    return res.status(200).json({ message: "Post deleted successfully" });
   } catch (err) {
-    console.error('Error deleting post: ', err);
-    return res.status(500).json({error: 'Server error'});
+    console.error("Error deleting post: ", err);
+    return res.status(500).json({ error: "Server error" });
   }
 });
 
 // Add comment to a post
-app.post('/api/posts/:postId/comments', verifyToken, async (req, res) => {
-  const {content} = req.body;
+app.post("/api/posts/:postId/comments", verifyToken, async (req, res) => {
+  const { content } = req.body;
   if (!content)
-    return res.status(400).json({error: 'Comment content required'});
+    return res.status(400).json({ error: "Comment content required" });
   try {
     const post = await Post.findById(req.params.postId);
-    if (!post) return res.status(404).json({error: 'Post no found'});
+    if (!post) return res.status(404).json({ error: "Post no found" });
     const comment = {
       content,
       author: req.user.id,
@@ -537,87 +570,125 @@ app.post('/api/posts/:postId/comments', verifyToken, async (req, res) => {
     };
     post.comments.push(comment);
     await post.save();
-    return res.status(201).json({message: 'Comment added successfully', comment});
+    return res
+      .status(201)
+      .json({ message: "Comment added successfully", comment });
   } catch (err) {
-    console.error('Error adding comment: ', err);
-    return res.status(500).json({error: 'Server error'});
+    console.error("Error adding comment: ", err);
+    return res.status(500).json({ error: "Server error" });
   }
 });
 
 // Create new JOB post
-app.post('/api/jobs', verifyToken, async (req, res) => {
-  const {title, description} = req.body;
-  if (!title || !description) return res.status(400).json({error: 'Title and description required'});
+app.post("/api/jobs", verifyToken, async (req, res) => {
+  const { title, description } = req.body;
+  if (!title || !description)
+    return res.status(400).json({ error: "Title and description required" });
   try {
     const newJob = new Job({
-      title, 
-      description, 
+      title,
+      description,
       employer: req.user.id,
       applicants: [],
     });
     await newJob.save();
-    return res.status(201).json({message: 'Job post created successfully', job: newJob});
+    return res
+      .status(201)
+      .json({ message: "Job post created successfully", job: newJob });
   } catch (err) {
-    console.error('Error creating job post: ', err);
-    return res.status(500).json({error: 'Server error'});
+    console.error("Error creating job post: ", err);
+    return res.status(500).json({ error: "Server error" });
   }
 });
 
 // Get all JOB posts
-app.get('/api/jobs', async (req, res) => {
+app.get("/api/jobs", async (req, res) => {
   try {
-    const jobs = await Job.find().populate('employer', 'username').lean();
-    return res.status(200).json({jobs});
+    const jobs = await Job.find().populate("employer", "username").lean();
+    return res.status(200).json({ jobs });
   } catch (err) {
-    console.error('Error fetching job posts: ', err);
-    return res.status(500).json({error: 'Server error'});
+    console.error("Error fetching job posts: ", err);
+    return res.status(500).json({ error: "Server error" });
   }
 });
 
 // Get a single JOB post by ID
-app.get('/api/jobs/:jobId', async (req, res) => {
+app.get("/api/jobs/:jobId", async (req, res) => {
   try {
-    const job = await Job.findById(req.params.jobId).populate('employer', 'username').lean();
-    if (!job) return res.status(404).json({error: 'Job post not found'});
-    return res.status(200).json({job});
+    const job = await Job.findById(req.params.jobId)
+      .populate("employer", "username")
+      .lean();
+    if (!job) return res.status(404).json({ error: "Job post not found" });
+    return res.status(200).json({ job });
   } catch (err) {
-    console.error('Error fetching job post: ', err);
-    return res.status(500).json({error: 'Server error'});
+    console.error("Error fetching job post: ", err);
+    return res.status(500).json({ error: "Server error" });
   }
 });
 
 // Update a JOB post
-app.put('/api/jobs/:jobId', verifyToken, async (req, res) => {
-  const {title, description} = req.body;
+app.put("/api/jobs/:jobId", verifyToken, async (req, res) => {
+  const { title, description } = req.body;
   try {
-    const job = await Job.findById(req. params. jobId);
-    if (!job) return res.status(404).json({error: 'Job post not found'});
+    const job = await Job.findById(req.params.jobId);
+    if (!job) return res.status(404).json({ error: "Job post not found" });
     if (job.employer.toString() !== req.user.id) {
-      return res.status(403).json({error: 'Not authorized to update this job post'});
+      return res
+        .status(403)
+        .json({ error: "Not authorized to update this job post" });
     }
     job.title = title || job.title;
     job.description = description || job.description;
     await job.save();
-    return res.status(200).json({message: 'Job post updated successfully', job});
+    return res
+      .status(200)
+      .json({ message: "Job post updated successfully", job });
   } catch (err) {
-    console.error('Error updating job post: ', err);
-    return res.status(500).json({error: 'Server error'});
+    console.error("Error updating job post: ", err);
+    return res.status(500).json({ error: "Server error" });
   }
 });
 
 // Delete a JOB post
-app.delete('/api/jobs/:jobId', verifyToken, async (req, res) => {
+app.delete("/api/jobs/:jobId", verifyToken, async (req, res) => {
   try {
     const job = await Job.findById(req.params.jobId);
-    if (!job) return res.status(404).json({error: 'Job post not found'});
+    if (!job) return res.status(404).json({ error: "Job post not found" });
     if (job.employer.toString() !== req.user.id) {
-      return res.status(403).json({error: 'Not authorized to delete this job post'});
+      return res
+        .status(403)
+        .json({ error: "Not authorized to delete this job post" });
     }
     await Job.findByIdAndDelete(req.params.jobId);
-    return res.status(200).json({message: 'Job post deleted successfully'});
+    return res.status(200).json({ message: "Job post deleted successfully" });
   } catch (err) {
-    console.error('Error deleting job post: ', err);
-    return res.status(500).json({error: 'Server error'});
+    console.error("Error deleting job post: ", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+
+// Add this with your other routes
+app.patch("/api/users/admin/role", async (req, res) => {
+  try {
+    const { username, role } = req.body;
+    if (role !== "admin") {
+      return res.status(400).json({ error: "Invalid role" });
+    }
+
+    const user = await User.findOneAndUpdate(
+      { username },
+      { role },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    return res.json({ message: "User updated successfully", user });
+  } catch (err) {
+    console.error("Error updating user role:", err);
+    return res.status(500).json({ error: "Server error" });
   }
 });
 

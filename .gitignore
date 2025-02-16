@@ -14,9 +14,11 @@ jspm_packages/
 bower_components/
 .webpack/
 .web_modules/
+bruno/
 
 # Environment files
 .env
 .env.local
 .env.*.local
+admin.txt
 
