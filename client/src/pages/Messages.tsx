@@ -1,4 +1,3 @@
-/*
 import { useEffect, useState, useContext } from "react";
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
@@ -8,31 +7,19 @@ import DefaultLayout from "@/layouts/default";
 import { UserConfigContext } from "@/config/UserConfig";
 import useGetUserList from "@/hooks/useGetUsers";
 import useSendMessage from "@/hooks/useSendMessage";
-import useUpdateMessages from "@/hooks/useUpdateMessages";
+import useUpdateMessages from "@/hooks/useUpdateChats";
 
 ///message TESTING
 export const Messages = () => {
-  const [selectedUser, setSelectedUser] = useState<string>("");
-  const [message, setMessage] = useState<string>("");
+  const [selectedUserId, setSelectedUserId] = useState("")
+  const [message, setMessage] = useState("");
   const { users } = useGetUserList();
-  const { loading, error, sendAndUpdateMessages } = useSendMessage();
-  const { updatedMessages } = useUpdateMessages();
-  const context = useContext(UserConfigContext);
+  const { loading, error, sendMessageAndUpdate } = useSendMessage();
  
 
-  useEffect(() => {
-    // Update messages periodically
-    const interval = setInterval(() => {
-      updatedMessages();
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, []);
-
   const handleSendMessage = async () => {
-    if (!selectedUser || !message.trim()) return;
-
-    await sendAndUpdateMessages(selectedUser, message);
+    if (!selectedUserId || !message.trim()) return;
+    await sendMessageAndUpdate(selectedUserId, message);
     setMessage("");
   };
 
@@ -54,9 +41,9 @@ export const Messages = () => {
               {users?.map((user) => (
                 <Button
                   key={user._id}
-                  color={selectedUser === user._id ? "primary" : "default"}
-                  variant={selectedUser === user._id ? "solid" : "light"}
-                  onPress={() => setSelectedUser(user._id)}
+                  color={selectedUserId === user.id? "primary" : "default"}
+                  variant={selectedUserId === user.id ? "solid" : "light"}
+                  onPress={() => setSelectedUserId(user._id)}
                 >
                   {user.username}
                 </Button>
@@ -67,7 +54,7 @@ export const Messages = () => {
        
         <Card className="flex-1 h-full">
           <CardHeader>
-            {users?.find((user) => user._id === selectedUser)?.username ||
+            {users?.find((user) => user.id === selectedUser)?.username ||
               "Select a user"}
           </CardHeader>
           <Divider />
@@ -104,36 +91,36 @@ export const Messages = () => {
           </CardBody>
         </Card>
       </div>
-      {/* // <ul>
-      //   {users.map((user) => (
-      //     <li key={user._id}>
-      //       <p>{user.username}</p>
-      //       <p>{user._id}</p>
-      //       <Input name="message" value={message} onChange={handleInputChange}/>
-      //       <Button onPress={handleSubmit}>Send Message</Button>
-      //     </li>
-      //   ))}
-      // </ul>
-      // <Button onPress={updatedMessages}>Update</Button>
-      //   <ul>
-      //      {received.map((message)=>(
-      //       <li key={message._id}>
-      //           <p>{message.recipient}</p>
-      //           <p>{message.sender}</p>
-      //           <p>{JSON.stringify(message.timestamp)}</p>
-      //       </li>
-      //      ))} 
-      //   </ul>
-      //   <ul>
-      //      {sent.map((message)=>(
-      //       <li key={message._id}>
-      //           <p>{message.recipient}</p>
-      //           <p>{message.sender}</p>
-      //           <p>{JSON.stringify(message.timestamp)}</p>
-      //       </li>
-      //      ))} 
-      //   </ul> 
+       <ul>
+         {users.map((user) => (
+           <li key={user._id}>
+             <p>{user.username}</p>
+             <p>{user._id}</p>
+             <Input name="message" value={message} onChange={handleInputChange}/>
+             <Button onPress={handleSubmit}>Send Message</Button>
+           </li>
+         ))}
+       </ul>
+       <Button onPress={updatedMessages}>Update</Button>
+         <ul>
+            {received.map((message)=>(
+            <li key={message._id}>
+                 <p>{message.recipient}</p>
+                 <p>{message.sender}</p>
+                 <p>{JSON.stringify(message.timestamp)}</p>
+             </li>
+            ))} 
+         </ul>
+         <ul>
+            {sent.map((message)=>(
+             <li key={message._id}>
+                 <p>{message.recipient}</p>
+                 <p>{message.sender}</p>
+                 <p>{JSON.stringify(message.timestamp)}</p>
+             </li>
+            ))} 
+         </ul> 
       {error && <p>{error}</p>}
     </DefaultLayout>
   );
-};*/
+};
