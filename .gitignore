@@ -21,4 +21,5 @@ bruno/
 .env.local
 .env.*.local
 admin.txt
+query.js
 
