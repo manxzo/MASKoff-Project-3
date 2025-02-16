@@ -22,3 +22,6 @@ bruno/
 .env.*.local
 admin.txt
 
+# Others
+MASKoff API.json
+.DS_Store
